@@ -10,6 +10,8 @@ import sitemap._
 import Loc._
 import net.liftmodules.JQueryModule
 import net.liftweb.http.js.jquery._
+import com.joescii.chat.comet.ChatServer
+import com.joescii.chat.model.User
 
 
 /**
@@ -56,5 +58,9 @@ class Boot {
 
     net.liftmodules.ng.AngularJS.init()
     net.liftmodules.ng.Angular.init()
+
+    LiftSession.afterSessionCreate :+= {(_:LiftSession, req:Req) =>
+      ChatServer ! User(req.remoteAddr)
+    }
   }
 }

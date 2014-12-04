@@ -7,11 +7,12 @@ import com.joescii.chat.comet.ChatServer
 object ChatServices {
   def render = renderIfNotAlreadyDefined(
     angular.module("ChatServices")
-    .factory("chatService", jsObjFactory().
-      jsonCall("sendChat", (msg:String) => {
-        ChatServer ! msg
-        Empty
-    })
+      .factory("chatSvc", jsObjFactory()
+        .jsonCall("sendChat", (chat:String) => {
+          println(chat)
+          ChatServer ! chat
+          Empty
+        })
       )
   )
 }

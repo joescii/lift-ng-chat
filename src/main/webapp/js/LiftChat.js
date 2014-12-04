@@ -1,14 +1,23 @@
 angular.module('LiftChat', ['ChatServices'])
 
-.controller('ChatController', ['$scope', 'chatService',
-    function($scope, chatSvc){
+.controller('ChatController', ['$scope', '$timeout', 'chatSvc', function($scope, $timeout, chatSvc){
   $scope.onSend = function() {
     chatSvc.sendChat($scope.chatInput);
     $scope.chatInput = '';
-  }
+  };
+
+  $scope.newUsers = [];
+
   $scope.chat = {
-    msgs: ['1', '2', 'angular', 'hola']
-  }
+    msgs : ['1', '2', 'stuff']
+  };
+
+  $scope.$on('newUser', function(event, data){
+    $scope.newUsers.push(data);
+    $timeout(function(){
+      $scope.newUsers.shift();
+    }, 5000);
+  });
 }])
 
 ;

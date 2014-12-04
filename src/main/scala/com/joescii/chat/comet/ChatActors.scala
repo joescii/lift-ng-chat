@@ -1,30 +1,40 @@
-package com.joescii.chat.comet
+package com.joescii.chat
+package comet
 
-import net.liftweb.actor.LiftActor
-import net.liftweb.http.{CometListener, ListenerManager}
-import net.liftmodules.ng.SimpleBindingActor
-import net.liftmodules.ng.Angular.NgModel
+import model._
+import net.liftweb.actor._
+import net.liftweb.http._
+import net.liftmodules.ng.{SimpleNgModelBinder, BindingToClient, AngularActor}
 
 object ChatServer extends LiftActor with ListenerManager {
-  private var msgs = List.empty[String]
+  var msgs = List.empty[String]
 
   def createUpdate = ChatMessages(msgs)
 
   override def lowPriority = {
-    case msg:String => {
-      msgs = msgs :+ msg
+    case msg:String =>
+      msgs = (msgs :+ msg) takeRight 10
       updateListeners()
-    }
 
+    case user @ User(ip) =>
+      println("New User "+ip)
+      sendListenersMessage(user)
   }
 }
 
-case class ChatMessages(msgs:List[String] = List())
-  extends NgModel
-
-class ChatBinder extends SimpleBindingActor  (
+class ChatBinder extends SimpleNgModelBinder(
   "chat",
   ChatMessages()
-) with CometListener {
+) with BindingToClient with CometListener {
   def registerWith = ChatServer
+}
+
+class NewUserNotifier extends AngularActor with CometListener {
+  def registerWith = ChatServer
+
+  override def lowPriority = {
+    case user @ User(ip) =>
+      println("emitting "+user)
+      scope.emit("newUser", ip)
+  }
 }
